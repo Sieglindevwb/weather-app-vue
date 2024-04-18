@@ -34,7 +34,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      api_key: '3501982f185a8a7e60b2bcb5608c46fc',
+      api_key: process.env.VUE_APP_API_KEY,
       url_base: 'https://api.openweathermap.org/data/2.5/',
       weather_icon: 'http://openweathermap.org/img/wn/',
       query: '',
