@@ -41,6 +41,42 @@ export default {
       weather: {},
     };
   },
+  methods: {
+    async fetchWeather(e) {
+      if (e.key == 'Enter') {
+        let response = await axios.get(
+          `${this.url_base}weather?q=${this.query}&units=metric&APPID=${this.api_key}`
+        );
+        this.setResults(response.data);
+      }
+    },
+    setResults(returnedResponse) {
+      this.weather = returnedResponse;
+    },
+    todaysDate() {
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      let d = new Date();
+      let month = months[d.getMonth()];
+      let day = days[d.getDay()];
+      let date = d.getDate();
+      let year = d.getFullYear();
+      return `${month} ${date} ${day} ${year}`;
+    },
+  },
 };
 </script>
 
@@ -54,7 +90,7 @@ export default {
   font-family: 'Montserrat';
 }
 .weather-container {
-  background-image: url('../assets/default.jpg');
+  background-image: url('../assets/wolkjes.jpg');
   background-size: cover;
   background-position: center;
   transition: 0.4s;
