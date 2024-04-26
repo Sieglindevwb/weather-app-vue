@@ -24,8 +24,16 @@
             <img :src="`${weather_icon}${weather.weather[0].icon}@2x.png`" />
           </div>
         </div>
-        <div class="daily-weather">
-          <p>Test</p>
+        <div class="daily-weather" v-if="typeof forecast !== 'undefined'">
+          <div
+            v-for="dayForecast in groupedForecast"
+            :key="dayForecast.date"
+            class="forecast-item"
+          >
+            <p>{{ dayForecast.date }}</p>
+            <p>{{ Math.round(dayForecast.avgTemp) }}°C</p>
+            <p>{{ dayForecast.weather }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -42,19 +50,54 @@ export default {
       weather_icon: 'http://openweathermap.org/img/wn/',
       query: '',
       weather: {},
+      forecast: {
+        list: [], // Initialize 'list' property as an empty array
+      },
+      latitude: null,
+      longitude: null,
     };
   },
   methods: {
     async fetchWeather(e) {
       if (e.key == 'Enter') {
-        let response = await axios.get(
-          `${this.url_base}weather?q=${this.query}&units=metric&APPID=${this.api_key}`
-        );
-        this.setResults(response.data);
+        let responseWeather, responseForecast;
+        if (this.query) {
+          // Fetch current weather by city name
+          responseWeather = await axios.get(
+            `${this.url_base}weather?q=${this.query}&units=metric&APPID=${this.api_key}`
+          );
+          // Fetch weather forecast for the next 5 days by city name
+          responseForecast = await axios.get(
+            `${this.url_base}forecast?q=${this.query}&units=metric&APPID=${this.api_key}`
+          );
+        } else if (this.latitude && this.longitude) {
+          // Fetch current weather and weather forecast by latitude and longitude
+          responseWeather = await axios.get(
+            `${this.url_base}weather?lat=${this.latitude}&lon=${this.longitude}&units=metric&APPID=${this.api_key}`
+          );
+          responseForecast = await axios.get(
+            `${this.url_base}forecast?lat=${this.latitude}&lon=${this.longitude}&units=metric&APPID=${this.api_key}`
+          );
+        } else {
+          // Handle case where neither latitude and longitude nor city name is provided
+          console.error(
+            'Please provide either city name or latitude and longitude.'
+          );
+          return;
+        }
+        console.log('Forecast data:', responseForecast.data);
+        // Set results for current weather
+        this.setResults(responseWeather.data);
+        // Set forecast data
+        this.setForecast(responseForecast.data);
+        console.log('Forecast object:', this.forecast);
       }
     },
     setResults(returnedResponse) {
       this.weather = returnedResponse;
+    },
+    setForecast(forecastData) {
+      this.forecast = forecastData;
     },
     todaysDate() {
       const months = [
@@ -78,6 +121,46 @@ export default {
       let date = d.getDate();
       let year = d.getFullYear();
       return `${month} ${date} ${day} ${year}`;
+    },
+    formatDate(timestamp) {
+      const date = new Date(timestamp * 1000); // Convert timestamp to milliseconds
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    },
+  },
+  computed: {
+    groupedForecast() {
+      // Group forecast data by day
+      const grouped = {};
+      this.forecast.list.forEach((item) => {
+        const date = this.formatDate(item.dt);
+        if (!grouped[date]) {
+          grouped[date] = {
+            date: date,
+            temps: [],
+            weather: item.weather[0].main,
+          };
+        }
+        grouped[date].temps.push(item.main.temp);
+      });
+
+      // Log the grouped data after it's initialized
+      console.log('Grouped forecast:', grouped);
+
+      // Calculate average temperature for each day
+      return Object.values(grouped).map((dayForecast) => {
+        const totalTemp = dayForecast.temps.reduce(
+          (acc, temp) => acc + temp,
+          0
+        );
+        return {
+          date: dayForecast.date,
+          avgTemp: totalTemp / dayForecast.temps.length,
+          weather: dayForecast.weather,
+        };
+      });
     },
   },
 };
@@ -170,6 +253,20 @@ export default {
   text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
 }
 .daily-weather {
-  color: white;
+  color: black;
+  display: flex;
+  align-items: center;
+}
+.forecast-item {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.forecast-date,
+.forecast-temp,
+.forecast-weather {
+  color: #fff; /* Text color same as other elements */
 }
 </style>
