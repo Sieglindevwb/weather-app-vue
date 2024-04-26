@@ -24,6 +24,9 @@
             <img :src="`${weather_icon}${weather.weather[0].icon}@2x.png`" />
           </div>
         </div>
+        <div class="daily-weather">
+          <p>Test</p>
+        </div>
       </div>
     </div>
   </div>
@@ -165,5 +168,8 @@ export default {
   font-weight: 700;
   font-style: italic;
   text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
+}
+.daily-weather {
+  color: white;
 }
 </style>
