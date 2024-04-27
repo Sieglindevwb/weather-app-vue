@@ -16,15 +16,15 @@
             {{ weather.name }},{{ weather.sys.country }}
           </div>
           <div class="date">{{ todaysDate() }}</div>
-        </div>
-        <div class="weather-box">
-          <div class="temp">{{ Math.round(weather.main.temp) }}°c</div>
-          <div class="weather">{{ weather.weather[0].main }}</div>
-          <div class="icon">
-            <img :src="`${weather_icon}${weather.weather[0].icon}@2x.png`" />
+          <div class="weather-box">
+            <div class="temp">{{ Math.round(weather.main.temp) }}°c</div>
+            <div class="weather">{{ weather.weather[0].main }}</div>
+            <div class="icon">
+              <img :src="`${weather_icon}${weather.weather[0].icon}@2x.png`" />
+            </div>
           </div>
         </div>
-        <div class="daily-weather" v-if="typeof forecast !== 'undefined'">
+        <div class="forecast">
           <div
             v-for="dayForecast in groupedForecast"
             :key="dayForecast.date"
@@ -132,6 +132,7 @@ export default {
   },
   computed: {
     groupedForecast() {
+      const today = this.formatDate(Date.now() / 1000);
       // Group forecast data by day
       const grouped = {};
       this.forecast.list.forEach((item) => {
@@ -146,6 +147,7 @@ export default {
         grouped[date].temps.push(item.main.temp);
       });
 
+      delete grouped[today];
       // Log the grouped data after it's initialized
       console.log('Grouped forecast:', grouped);
 
@@ -180,7 +182,7 @@ export default {
   background-size: cover;
   background-position: center;
   transition: 0.4s;
-  width: 375px;
+  width: 500px;
   margin: 0 auto;
   border-radius: 25px;
   margin-top: 50px;
@@ -215,6 +217,19 @@ export default {
   box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.25);
   background-color: rgba(255, 255, 255, 0.75);
 }
+.weather-info {
+  display: flex; /* Make the weather-wrap a flex container */
+  flex-direction: row; /* Arrange items horizontally */
+  justify-content: space-between; /* Align items evenly along the main axis */
+  align-items: flex-start; /* Align items at the start of the flex container */
+}
+
+.location-box {
+  flex: 2; /* Make the forecast container take up more space */
+  display: flex; /* Arrange weather box and forecast container horizontally */
+  flex-direction: column; /* Arrange weather box and forecast vertically */
+  align-items: center; /* Align items at the center of the container */
+}
 .location-box .location {
   color: #fff;
   font-size: 32px;
@@ -229,6 +244,7 @@ export default {
   font-weight: 300;
   text-align: center;
 }
+
 .weather-box {
   text-align: center;
 }
@@ -245,6 +261,35 @@ export default {
   box-shadow: 3px 6px rgba(0, 0, 0, 0.25);
   font-style: italic;
 }
+
+.weather-box,
+.forecast {
+  width: 100%; /* Ensure both boxes take up full width */
+  margin: 0 10px; /* Add margin between weather box and forecast */
+}
+
+.weather-box,
+.forecast-item {
+  flex: 1; /* Each box takes equal space */
+}
+.forecast {
+  margin-top: 20px; /* Add margin to separate from weather box */
+}
+
+.weather-box .temp {
+  display: inline-block;
+  padding: 10px 25px;
+  color: #fff;
+  font-size: 102px;
+  font-weight: 900;
+  text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  margin: 30px 0px;
+  box-shadow: 3px 6px rgba(0, 0, 0, 0.25);
+  font-style: italic;
+}
+
 .weather-box .weather {
   color: #fff;
   font-size: 48px;
@@ -252,21 +297,11 @@ export default {
   font-style: italic;
   text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
 }
-.daily-weather {
-  color: black;
-  display: flex;
-  align-items: center;
-}
 .forecast-item {
   background-color: rgba(255, 255, 255, 0.2);
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 8px;
-}
-
-.forecast-date,
-.forecast-temp,
-.forecast-weather {
-  color: #fff; /* Text color same as other elements */
+  color: white;
 }
 </style>
